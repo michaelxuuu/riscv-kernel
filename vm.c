@@ -19,17 +19,9 @@ typedef struct pte {
     uint64_t reserved2:10;
 } __attribute__((packed)) pte_t;
 
-typedef pte_t pteflgs_t;
-
 typedef struct pt {
     pte_t arr[512];
 } __attribute__((packed)) pt_t;
-
-typedef struct va_vpn {
-    uint64_t l:9;
-    uint64_t m:9;
-    uint64_t h:9;
-} __attribute__((packed)) va_vpn_t;
 
 typedef struct _va {
     uint64_t vpo:12;
@@ -42,74 +34,48 @@ typedef struct _va {
 static pt_t *kernelpt = 0;
 
 static void init(void);
+static void init_map(pa_t pa, va_t va, int flags);
 
 vmmngr_t vmmngr = {init};
 
-static void init_map(pa_t pa, va_t va, int flags) {
+void init_map(pa_t pa, va_t va, int flags) {
 
-    // starting from pt1
-    // recursively find pt3
-    // and write pa to
-    // the corresponding offset.
-    // allocate page tables
+    // starting from level-1 page table
+    // iteratively find level-3 table
+    // and the entry that corresponds to
+    // the physical address
+    // and write pa to the ppn field.
+    // will allocate page tables
     // along the way if necessary
 
-    // break va into segments
+    // break vpn into three 9-bit parts
+    // which will be used to index page tables
     _va_t* _va = (_va_t*)&va;
+    uint64_t vpns[3] = {_va->vpn3, _va->vpn2, _va->vpn1};
 
-    pt_t *pt1, *pt2, *pt3;
-    pte_t *pte1, *pte2, *pte3;
+    pt_t* pt = kernelpt;
+    pte_t* pte;
 
-    if (!kernelpt) {
-        kernelpt = (pt_t*)pmmngr.alloc();
-        memset((void*)kernelpt, 0, 4096);
+    for (int i = 0; i < 3; i++) {
+        pte = &pt->arr[vpns[i]];
+        // break if reached level 3
+        // pte ends up corresponding to the intended physical address
+        if (i != 2) {
+            if (!pte->valid) { // allocate the page table if unallocated
+                pa_t tmp = (pa_t)pmmngr.alloc();
+                memset((void *)tmp, 0, 4096);
+                pte->valid = 1;
+                pte->ppn = tmp >> 12;
+            }
+            pt = (pt_t*)(uint64_t)(pte->ppn << 12); // get the next level page table
+        }
     }
 
-    // obtain pt1 and pte1
-    pt1 = kernelpt;
-    /*
-        vpn[30:39]
-            |        pt1 --> +--------+
-            |                |        |
-            |                |        |
-            +--------------> |  pte1  | ---------> pt2 (could be unallocated) 
-                             |        |
-                             +--------+
-    */
-    pte1 = &pt1->arr[_va->vpn3];
-
-    // allocate pt2 if unallocated
-    if (!pte1->valid) {
-        pte1->valid = 1;
-        pa_t pa = pmmngr.alloc();
-        pte1->ppn = pa >> 12;
-        memset((void*)(uint64_t)pa, 0, 4096);
-    }
-
-    // obtain pt2 and pte2
-    pt2 = (pt_t *)((uint64_t)pte1->ppn << 12);
-    pte2 = &pt2->arr[_va->vpn2];
-
-    if (!pte2->valid) {
-        pte2->valid = 1;
-        pa_t pa = pmmngr.alloc();
-        pte2->ppn = pa >> 12;
-        memset((void*)(uint64_t)pa, 0, 4096);
-    }
-
-    // obtain pt3 and pte3
-    pt3 = (pt_t *)((uint64_t)pte2->ppn << 12);
-    pte3 = &pt3->arr[_va->vpn1];
-    // Panic if already mapped
-    // Write pte3 with the intended PPN and flags otherwise
-    if (pte3->valid)
-        kpanic("remap");
-
-    pte3->valid = 1;
-    pte3->ppn = pa >> 12;
-    pte3->readable = !!(flags & PTE_R);
-    pte3->writable = !!(flags & PTE_W);
-    pte3->executable = !!(flags & PTE_X);
+    pte->valid = 1;
+    pte->ppn = pa >> 12;
+    pte->readable = !!(flags & PTE_R);
+    pte->writable = !!(flags & PTE_W);
+    pte->executable = !!(flags & PTE_X);
 }
 
 
@@ -159,6 +125,10 @@ extern char _text_end[];
 extern char _ram_end[];
 
 void init() {
+    // allocate kernel page table
+    kernelpt = (pt_t*)pmmngr.alloc();
+    memset((void*)kernelpt, 0, 4096);
+
     // PLIC
     for (pa_t pa = 0xC000000; pa < 0xC400000; pa += 4096)
         init_map(pa, pa, PTE_R | PTE_W);
