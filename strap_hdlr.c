@@ -1,4 +1,4 @@
-#include "console.h"
+#include "kprintf.h"
 #include "hart.h"
 
 char* icause[] = {
@@ -36,7 +36,7 @@ char* ecause[] = {
 void _strap_hdlr() {
     uint64_t msb = 1L << 63;
     if (scause.read() & msb)
-        printf("%s\n", icause[scause.read() & ~msb]);
+        kprintf("%s\n", icause[scause.read() & ~msb]);
     else
-        printf("%s\n", ecause[scause.read() & ~msb]);
+        kprintf("%s\n", ecause[scause.read() & ~msb]);
 }   

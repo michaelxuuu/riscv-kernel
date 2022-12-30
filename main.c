@@ -1,7 +1,8 @@
 #include "hart.h"
 #include "uart.h"
 #include "pm.h"
-#include "console.h"
+#include "kprintf.h"
+#include "vm.h"
 
 void _strap_stub();
 
@@ -10,11 +11,10 @@ void _main () {
     sie.write(sie.read() | 1 << 9 | 1 << 5 | 1 << 1);
     if (!tp.read()) {
         uart.init();
-        printf("booting...");
+        kprintf("booting...");
         pmmngr.init();
         stvec.write((uint64_t)_strap_stub);
+        vmmngr.init();
     }
-    asm ("de:");
-    asm volatile ("csrw mcause, 0");
     for(;;);
 }

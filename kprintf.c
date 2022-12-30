@@ -1,4 +1,4 @@
-#include "console.h"
+#include "kprintf.h"
 #include "spinlk.h"
 #include "uart.h"
 #include "types.h"
@@ -49,7 +49,7 @@ void printptr(uint64_t x) {
 }
 
 // %d, %x, %p, %s
-void printf(const char *fmt, ...) {
+void kprintf(const char *fmt, ...) {
     spinlk_acquire(&lk); // No interleaving priniting (Must use synchronous uart.putc to avoid deadlock)
     va_list ap;
     va_start(ap, fmt);

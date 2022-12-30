@@ -1,0 +1,7 @@
+/test
+
+*.o
+
+vhd
+
+kernel
