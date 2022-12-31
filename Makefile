@@ -1,12 +1,12 @@
-SRC = $(wildcard *.c)
-ASM = $(wildcard *.s)
-OBJ1 = $(SRC:.c=.o) $(ASM:.s=.o)
-OBJ = $(OBJ1:entry.o=)
+SRC = $(wildcard boot/*.c dev/*.c hart/*.c kernel/*.c mm/*.c sync/*.c trap/*.c util/*.c)
+ASM = $(wildcard boot/*.s trap/*.s)
+TMP = $(SRC:.c=.o) $(ASM:.s=.o)
+OBJ = $(TMP:boot/entry.o=)
 
 CPUS = 1
 BLKCOUNT = 0
 
-QEMUOPTS = -machine virt -bios none -kernel kernel -m 128M -smp $(CPUS) -nographic
+QEMUOPTS = -machine virt -bios none -kernel kernel.bin -m 128M -smp $(CPUS) -nographic
 QEMUOPTS += -global virtio-mmio.force-legacy=false
 QEMUOPTS += -drive file=vhd,if=none,format=raw,id=x0
 QEMUOPTS += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
@@ -37,9 +37,9 @@ CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax
 CFLAGS += -I.
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 
-build: kernel
+build: kernel.bin
 
-run: kernel vhd
+run: kernel.bin vhd
 	qemu-system-riscv64 $(QEMUOPTS)
 # sleep 1
 # cat out
@@ -49,8 +49,8 @@ run: kernel vhd
 debug:
 	make qemu && make gdb
 
-qemu: kernel vhd
-	$(QEMU) $(QEMUOPTS) -s -S &
+qemu: kernel.bin vhd
+	$(QEMU) $(QEMUOPTS) -s -S
 
 # Do `make gdb` separately with `make qemu` otherwie ctrl+c would terminate qemu immediately
 gdb:
@@ -60,10 +60,10 @@ gdb:
 vhd:
 	dd bs=1M if=/dev/zero of=$@ count=$(BLKCOUNT)
 
-kernel: kernel.o
-	$(OBJCOPY) -O binary $< $@
+kernel.bin: kernel.o
+	$(OBJCOPY) $< $@ -O binary
 
-kernel.o: entry.o $(OBJ)
+kernel.o: boot/entry.o $(OBJ)
 	$(LD) -Tlink.ld -o $@ $^
 
 %.o : %.c
@@ -73,7 +73,8 @@ kernel.o: entry.o $(OBJ)
 	$(AS) -o $@ $< -g
 
 clean:
-	@rm kernel *.o out vhd 2>/dev/null || :
+	@rm kernel.bin *.o out vhd 2>/dev/null || :
+	@find . -name \*.o -type f -delete
 
 kill:
 	@ps -ef | grep qemu | grep -v grep | awk '{print $$2}' | xargs kill

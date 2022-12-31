@@ -8,7 +8,7 @@ struct uart
     void (*putc)(char);
     void (*putc_sync)(char c);
     char (*getc)(void);
-    void (*hdlr)(void);
+    void (*isr)(void);
 };
 
 typedef struct uart uart_t;

@@ -1,7 +1,7 @@
-#include "kprintf.h"
-#include "spinlk.h"
-#include "uart.h"
-#include "types.h"
+#include "../include/kprintf.h"
+#include "../include/spinlk.h"
+#include "../include/uart.h"
+#include "../include/types.h"
 
 static spinlk_t lk = SPINLK_INITIALIZER;
 

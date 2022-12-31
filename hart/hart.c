@@ -1,4 +1,4 @@
-#include "hart.h"
+#include "../include/hart.h"
 
 #define MK_REG_OBJ_RO(name) \
 uint64_t name##_read() { \

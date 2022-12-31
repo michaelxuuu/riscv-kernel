@@ -5,5 +5,4 @@
 
 void memset(void *s, int val, size_t len);
 
-
 #endif

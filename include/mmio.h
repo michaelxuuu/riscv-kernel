@@ -9,4 +9,10 @@
 #define mmio_readb(addr) \
     *(volatile uint8_t *)(addr)
 
+#define mmio_writew(addr, val) \
+    *(volatile uint32_t *)(addr) = val
+
+#define mmio_readw(addr) \
+    *(volatile uint32_t *)(addr)
+
 #endif

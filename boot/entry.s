@@ -2,6 +2,7 @@
 .extern stack0
 .extern _start
 
+
 .text
 _entry:
     csrr t0, mhartid

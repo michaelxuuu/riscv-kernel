@@ -1,7 +1,2 @@
-/test
-
-*.o
-
-vhd
-
-kernel
+test
+.vscode

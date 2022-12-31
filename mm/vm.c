@@ -1,9 +1,9 @@
-#include "vm.h"
-#include "types.h"
-#include "pm.h"
-#include "kpanic.h"
-#include "util.h"
-#include "hart.h"
+#include "../include/vm.h"
+#include "../include/types.h"
+#include "../include/pm.h"
+#include "../include/kpanic.h"
+#include "../include/util.h"
+#include "../include/hart.h"
 
 typedef struct pte {
     uint64_t valid:1;
@@ -142,7 +142,6 @@ void init() {
         init_map(pa, pa, PTE_R | PTE_W);
     
     // kernel code (text)
-    asm ("de:");
     for (pa_t pa = 0x80000000; pa < (pa_t)_text_end; pa += 4096)
         init_map(pa, pa, PTE_R | PTE_W | PTE_X);
     
@@ -150,6 +149,11 @@ void init() {
     for (pa_t pa = (pa_t)_text_end; pa < (pa_t)_ram_end; pa += 4096)
         init_map(pa, pa, PTE_R | PTE_W);
 
+    // Install kernel page table
+
+    // Flush TLB to make sure it starts off clean
+    // Use memory fence to make sure memory operations that needs phsycial addresses
+    // happend strictly before paging's turned on, and vice versa
     asm ("sfence.vma zero, zero");
     satp.write((pa_t)kernelpt >> 12 | (1L << 63));
     asm ("sfence.vma zero, zero");

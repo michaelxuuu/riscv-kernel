@@ -1,4 +1,4 @@
-#include "spinlk.h"
+#include "../include/spinlk.h"
 
 void spinlk_init(spinlk_t *lk) {
     lk->lk = 0;

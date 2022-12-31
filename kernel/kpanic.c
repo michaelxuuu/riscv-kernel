@@ -1,5 +1,5 @@
-#include "kpanic.h"
-#include "kprintf.h"
+#include "../include/kpanic.h"
+#include "../include/kprintf.h"
 
 bool paniced = 0;
 

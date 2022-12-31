@@ -1,6 +1,7 @@
-#include "uart.h"
-#include "spinlk.h"
-#include "mmio.h"
+#include "../include/uart.h"
+#include "../include/spinlk.h"
+#include "../include/mmio.h"
+#include "../include/console.h"
 
 #define UART_BASE 0x10000000L
 
@@ -41,18 +42,18 @@ static void init(void);
 static void putc(char c);
 static void putc_sync(char c);
 static char getc(void);
-static void hdlr(void);
+static void isr(void);
 static void bflush(void);
 
 // Initialize interface
-uart_t uart = {init, putc, putc_sync, getc, hdlr};
+uart_t uart = {init, putc, putc_sync, getc, isr};
 
 // Spinlock for mutual exclusion between cores
 spinlk_t lk;
 
 // Transmit buffer
 #define BUFSIZE 32
-char buf[32];
+char buf[BUFSIZE];
 int head;
 int tail;
 
@@ -72,7 +73,7 @@ void init() {
     mmio_writeb(DLH, 0);
     mmio_writeb(LCR, LCR_WLEN8);
     mmio_writeb(FCR, FCR_RS | FCR_EN);
-    mmio_writeb(IER, IER_RX | IER_TX);
+    mmio_writeb(IER, IER_RX);
 }
 
 void putc(char c) {
@@ -106,12 +107,13 @@ char getc() {
 }
 
 // Uart interrupt handler
-void hdlr() {
+void isr() {
     // data arrived or ready for more input or both
     char c;
-    while ((c = getc()) != -1)
+    while ((c = getc()) != (char)-1)
     {
         // data for console
+        console.isr(c);
     }
 
     spinlk_acquire(&lk);

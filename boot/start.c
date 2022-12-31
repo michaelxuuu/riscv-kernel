@@ -1,6 +1,6 @@
-#include "types.h"
-#include "timer.h"
-#include "hart.h"
+#include "../include/types.h"
+#include "../include/timer.h"
+#include "../include/hart.h"
 
 void _main();
 void _mti();

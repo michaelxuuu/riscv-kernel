@@ -1,6 +1,6 @@
-#include "pm.h"
-#include "util.h"
-#include "spinlk.h"
+#include "../include/pm.h"
+#include "../include/util.h"
+#include "../include/spinlk.h"
 
 /*
     DRAM layout:
