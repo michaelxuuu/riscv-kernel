@@ -2,6 +2,7 @@
 #include "../include/hart.h"
 #include "../include/plic.h"
 #include "../include/uart.h"
+#include "../include/disk.h"
 
 char* icause[] = {
     "User software interrupt",
@@ -41,10 +42,13 @@ void _strap_hdlr() {
     uint64_t intr = cause & msb;
     uint64_t no = cause & ~msb;
     if (intr) {
-        if (plic.query() == 10)
+        int irq = plic.query();
+        if (irq == UART0_IRQ)
             uart.isr();
+        else if (irq == VIRTIO0_IRQ)
+            disk.isr();
         else kprintf("%s\n", icause[no]);
-        plic.eoi(10);
+        plic.eoi(irq);
     }
     else
         kprintf("%s\n", ecause[no]);

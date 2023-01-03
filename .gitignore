@@ -1,2 +1,9 @@
 test
 .vscode
+.DS_Store
+*/*.o
+*.o
+kernel.bin
+vhd
+git.py
+notes.txt

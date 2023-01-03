@@ -26,7 +26,7 @@ static void putc(char c) {
 }
 
 #define BACKSPACE '\b'
-#define C(x)  ((x)-'@')  // Control-x
+#define Ctrl(x)  ((x)-'@')  // Control-x
 
 // called by uart isr
 void isr(char c) {
@@ -34,18 +34,18 @@ void isr(char c) {
 
     switch (c)
     {
-        case C('P'):
+        case Ctrl('P'):
             kprintf("procdump\n");
             break;
         
-        case C('U'):
+        case Ctrl('U'):
             while(edit != head &&
                   line[(edit-1) % LINESIZE] != '\n'){
               edit--;
               putc(BACKSPACE);
             }
         
-        case C('H'): // Backspace
+        case Ctrl('H'): // Backspace
         case '\x7f': // Delete key
             if(edit != head){
               edit--;

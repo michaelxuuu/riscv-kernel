@@ -4,7 +4,7 @@ TMP = $(SRC:.c=.o) $(ASM:.s=.o)
 OBJ = $(TMP:boot/entry.o=)
 
 CPUS = 1
-BLKCOUNT = 0
+BLKCOUNT = 1
 
 QEMUOPTS = -machine virt -bios none -kernel kernel.bin -m 128M -smp $(CPUS) -nographic
 QEMUOPTS += -global virtio-mmio.force-legacy=false

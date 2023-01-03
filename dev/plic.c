@@ -13,8 +13,6 @@ plic_t plic = {init, inithart, query, eoi};
 #define PLIC_IRQ_EN_BASE 0xC002080 // irq enable (per hart), word size, 0x100 spacing
 #define PLIC_THRES_BASE 0xC201000 // irq threashold (per hart), word size, 0x2000 spacing
 #define PLIC_CLIAM_BASE 0xC201004 // claim register (per hart), word size, 0x2000 spacing
-#define UART0_IRQ 10
-#define VIRTIO0_IRQ 1
 
 // enable irq lines by setting their priorities.
 // here we enable line 1 for virtio0 and 10 uart0
