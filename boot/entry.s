@@ -1,6 +1,6 @@
 .global _entry
 .extern stack0
-.extern _start
+.extern start
 
 
 .text
@@ -10,4 +10,4 @@ _entry:
     slli t0, t0, 12
     la t1, stack0
     add sp, t0, t1
-    j _start
+    j start

@@ -38,7 +38,7 @@ char* ecause[] = {
 
 void _strap_hdlr() {
     uint64_t msb = 1L << 63;
-    uint64_t cause = scause.read();
+    uint64_t cause = r_scause();
     uint64_t intr = cause & msb;
     uint64_t no = cause & ~msb;
     if (intr) {

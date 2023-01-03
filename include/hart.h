@@ -3,45 +3,71 @@
 
 #include "types.h"
 
-#define REG_OBJ_RO(name) \
-struct name { \
-    uint64_t (*read) (void); \
-}; \
-typedef struct name name##_t; \
-extern name##_t name; \
+#define FUNC_READ_CSR(register_name) \
+static inline uint64_t \
+r_##register_name() { \
+    uint64_t x; \
+    asm volatile("csrr %0," #register_name : "=r" (x) ); \
+    return x; \
+}
 
-#define REG_OBJ_WO(name) \
-struct name { \
-    void (*write) (uint64_t); \
-}; \
-typedef struct name name##_t; \
-extern name##_t name; \
+#define FUNC_WRITE_CSR(register_name) \
+static inline void \
+w_##register_name(uint64_t x) { \
+    asm volatile("csrw " #register_name ", %0" :: "r" (x) ); \
+}
 
-#define REG_OBJ_RW(name) \
-struct name { \
-    uint64_t (*read) (void); \
-    void (*write) (uint64_t); \
-}; \
-typedef struct name name##_t; \
-extern name##_t name; \
+#define FUNC_READ_GP(register_name) \
+static inline uint64_t \
+r_##register_name() { \
+    uint64_t x; \
+    asm volatile("mv %0," #register_name : "=r" (x) ); \
+    return x; \
+}
 
-REG_OBJ_RO(mhartid)
-REG_OBJ_RW(mscratch)
-REG_OBJ_RW(mtvec)
-REG_OBJ_RW(mstatus)
-REG_OBJ_RW(mie)
-REG_OBJ_RW(mepc)
-REG_OBJ_RW(pmpaddr0)
-REG_OBJ_RW(pmpcfg0)
-REG_OBJ_RW(medeleg)
-REG_OBJ_RW(mideleg)
-REG_OBJ_RW(satp)
-REG_OBJ_RW(sie)
-REG_OBJ_RW(sstatus)
-REG_OBJ_RW(scause)
-REG_OBJ_RW(stvec)
-REG_OBJ_RW(tp)
-REG_OBJ_RW(sp)
-REG_OBJ_RW(ra)
+#define FUNC_WRITE_GP(register_name) \
+static inline void \
+w_##register_name(uint64_t x) { \
+    asm volatile("mv " #register_name ", %0" :: "r" (x) ); \
+}
+
+FUNC_READ_CSR(mhartid)
+FUNC_READ_CSR(mscratch)
+FUNC_READ_CSR(mtvec)
+FUNC_READ_CSR(mstatus)
+FUNC_READ_CSR(mie)
+FUNC_READ_CSR(mepc)
+FUNC_READ_CSR(pmpaddr0)
+FUNC_READ_CSR(pmpcfg0)
+FUNC_READ_CSR(medeleg)
+FUNC_READ_CSR(mideleg)
+FUNC_READ_CSR(satp)
+FUNC_READ_CSR(scause)
+FUNC_READ_CSR(sie)
+FUNC_READ_CSR(sstatus)
+FUNC_READ_CSR(stvec)
+
+FUNC_WRITE_CSR(mscratch)
+FUNC_WRITE_CSR(mtvec)
+FUNC_WRITE_CSR(mstatus)
+FUNC_WRITE_CSR(mie)
+FUNC_WRITE_CSR(mepc)
+FUNC_WRITE_CSR(pmpaddr0)
+FUNC_WRITE_CSR(pmpcfg0)
+FUNC_WRITE_CSR(medeleg)
+FUNC_WRITE_CSR(mideleg)
+FUNC_WRITE_CSR(satp)
+FUNC_WRITE_CSR(scause)
+FUNC_WRITE_CSR(sie)
+FUNC_WRITE_CSR(sstatus)
+FUNC_WRITE_CSR(stvec)
+
+FUNC_READ_GP(tp)
+FUNC_READ_GP(sp)
+FUNC_READ_GP(ra)
+
+FUNC_WRITE_GP(tp)
+FUNC_WRITE_GP(sp)
+FUNC_WRITE_GP(ra)
 
 #endif

@@ -155,7 +155,7 @@ void init() {
     // Use memory fence to make sure memory operations that needs phsycial addresses
     // happend strictly before paging's turned on, and vice versa
     asm ("sfence.vma zero, zero");
-    satp.write((pa_t)kernelpt >> 12 | (1L << 63));
+    w_satp((pa_t)kernelpt >> 12 | (1L << 63));
     asm ("sfence.vma zero, zero");
 }
 

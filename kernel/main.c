@@ -9,18 +9,18 @@
 
 void _strap_stub();
 
-void _main () {
-    if (!tp.read()) {
+void main () {
+    if (!r_tp()) {
         uart.init();
         kprintf("booting...");
         pmmngr.init();
-        stvec.write((uint64_t)_strap_stub);
+        w_stvec((uint64_t)_strap_stub);
         vmmngr.init();
         plic.init();
         plic.inithart();
         // Enable supervisor-mode interrupt
-        sstatus.write(sstatus.read() | 1 << 1);
-        sie.write(sie.read() | 1 << 9);
+        w_sstatus(r_sstatus()|1<<1);
+        w_sie(r_sie()|1<<9);
         disk.init();
         bio.init();
         buf_t *b = bio.bread(0,0);

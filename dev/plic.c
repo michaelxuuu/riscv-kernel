@@ -31,15 +31,15 @@ void init() {
 // The first word is for machine mode and the second supervisor
 // We only alter the second word since we delegated all interrupts to S-mode
 void inithart() {
-    uint64_t hartid = tp.read();
+    uint64_t hartid = r_tp();
     mmio_writew(PLIC_IRQ_EN_BASE + hartid * 0x100, 1 << VIRTIO0_IRQ | 1 << UART0_IRQ);
     mmio_writew(PLIC_THRES_BASE + hartid * 0x2000, 0);
 }
 
 int query(void) {
-    return mmio_readw(PLIC_CLIAM_BASE + tp.read() * 0x2000);
+    return mmio_readw(PLIC_CLIAM_BASE + r_tp() * 0x2000);
 }
 
 void eoi(int irq) {
-    mmio_writew(PLIC_CLIAM_BASE + tp.read() * 0x2000, irq);
+    mmio_writew(PLIC_CLIAM_BASE + r_tp() * 0x2000, irq);
 }
